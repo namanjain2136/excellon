@@ -109,14 +109,14 @@ function ExcellonPage() {
       const first = wb.SheetNames[0];
       setSheetName(first);
       setStatus({ kind: "detecting" });
-      const cols = detectNumericColumns(wb.Sheets[first]);
+      const { headerRow: hr, columns: cols } = detectNumericColumns(wb.Sheets[first]);
+      setHeaderRow(hr);
       setColumns(cols);
-      // pre-select currency-like
       setSelected(new Set(cols.filter((c) => c.isCurrencyLike).map((c) => c.index)));
       if (cols.length === 0) {
         toast.warning("No numeric columns were detected in this sheet.");
       } else {
-        toast.success(`Detected ${cols.length} numeric column${cols.length > 1 ? "s" : ""}.`);
+        toast.success(`Detected header at row ${hr + 1} · ${cols.length} numeric column${cols.length > 1 ? "s" : ""}.`);
       }
       setStatus({ kind: "ready" });
     } catch (e) {
