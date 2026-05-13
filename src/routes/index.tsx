@@ -54,6 +54,7 @@ function ExcellonPage() {
   const [workbook, setWorkbook] = useState<XLSX.WorkBook | null>(null);
   const [sheetName, setSheetName] = useState<string>("");
   const [columns, setColumns] = useState<ColumnInfo[]>([]);
+  const [headerRow, setHeaderRow] = useState<number>(0);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [dragOver, setDragOver] = useState(false);
