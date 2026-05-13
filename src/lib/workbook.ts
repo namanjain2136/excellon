@@ -96,12 +96,11 @@ function insertWordsColumn(
   insertAt: number,
   newHeader: string,
   opts: ConvertOptions,
+  headerRow: number,
 ): { skipped: number } {
   const range = XLSX.utils.decode_range(ws["!ref"]!);
   let skipped = 0;
 
-  // Shift all cells at column >= insertAt one column to the right.
-  // Iterate from rightmost column to avoid overwriting.
   for (let C = range.e.c; C >= insertAt; C--) {
     for (let R = range.s.r; R <= range.e.r; R++) {
       const oldAddr = XLSX.utils.encode_cell({ r: R, c: C });
@@ -115,7 +114,6 @@ function insertWordsColumn(
     }
   }
 
-  // Update merges
   if (ws["!merges"]) {
     for (const m of ws["!merges"]) {
       if (m.s.c >= insertAt) m.s.c += 1;
@@ -123,17 +121,14 @@ function insertWordsColumn(
     }
   }
 
-  // Update column widths/info
   if (ws["!cols"]) {
     ws["!cols"].splice(insertAt, 0, { wch: Math.max(newHeader.length + 4, 30) });
   }
 
-  // Write header at insertAt
-  const headerAddr = XLSX.utils.encode_cell({ r: range.s.r, c: insertAt });
+  const headerAddr = XLSX.utils.encode_cell({ r: headerRow, c: insertAt });
   ws[headerAddr] = { t: "s", v: newHeader };
 
-  // Write converted values. Note: sourceCol may have shifted if sourceCol >= insertAt (it was, since insertAt = sourceCol+1, so source unchanged).
-  for (let R = range.s.r + 1; R <= range.e.r; R++) {
+  for (let R = headerRow + 1; R <= range.e.r; R++) {
     const srcAddr = XLSX.utils.encode_cell({ r: R, c: sourceCol });
     const cell = ws[srcAddr];
     const newAddr = XLSX.utils.encode_cell({ r: R, c: insertAt });
@@ -141,15 +136,14 @@ function insertWordsColumn(
       skipped++;
       continue;
     }
-    const num = typeof cell.v === "number" ? cell.v : Number(cell.v);
-    if (isNaN(num)) {
+    const raw = typeof cell.v === "number" ? cell.v : Number(String(cell.v).replace(/,/g, ""));
+    if (isNaN(raw)) {
       skipped++;
       continue;
     }
-    ws[newAddr] = { t: "s", v: convertNumber(num, opts) };
+    ws[newAddr] = { t: "s", v: convertNumber(raw, opts) };
   }
 
-  // Update !ref
   range.e.c += 1;
   ws["!ref"] = XLSX.utils.encode_range(range);
 
