@@ -73,14 +73,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Excellon — Convert Excel numbers to Indian English words" },
+      { name: "description", content: "Convert numeric Excel columns into Indian English words instantly. 100% private — files never leave your device." },
+      { name: "author", content: "Excellon" },
+      { property: "og:title", content: "Excellon — Numbers to Words for Excel" },
+      { property: "og:description", content: "Convert Excel numeric amounts into Indian English words while preserving your workbook formatting." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
