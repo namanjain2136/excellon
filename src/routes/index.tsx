@@ -129,7 +129,8 @@ function ExcellonPage() {
   const onSheetChange = (name: string) => {
     if (!workbook) return;
     setSheetName(name);
-    const cols = detectNumericColumns(workbook.Sheets[name]);
+    const { headerRow: hr, columns: cols } = detectNumericColumns(workbook.Sheets[name]);
+    setHeaderRow(hr);
     setColumns(cols);
     setSelected(new Set(cols.filter((c) => c.isCurrencyLike).map((c) => c.index)));
     if (cols.length === 0) toast.warning("No numeric columns were detected in this sheet.");
