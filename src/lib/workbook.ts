@@ -160,21 +160,20 @@ export function processSheet(
   ws: XLSX.WorkSheet,
   selectedCols: number[],
   opts: ConvertOptions,
+  headerRow?: number,
 ): { skipped: number } {
-  // Process from rightmost selected column to leftmost so earlier inserts don't shift later indices.
+  const hr = headerRow ?? detectHeaderRow(ws);
   const sorted = [...selectedCols].sort((a, b) => b - a);
   let skipped = 0;
   for (const col of sorted) {
-    const range = XLSX.utils.decode_range(ws["!ref"]!);
-    const headerAddr = XLSX.utils.encode_cell({ r: range.s.r, c: col });
+    const headerAddr = XLSX.utils.encode_cell({ r: hr, c: col });
     const headerVal = ws[headerAddr]?.v ?? "Column";
     const newHeader = `${String(headerVal)} in Words`;
 
-    // Skip if next column already has " in Words" header (prevent duplicates)
-    const nextAddr = XLSX.utils.encode_cell({ r: range.s.r, c: col + 1 });
+    const nextAddr = XLSX.utils.encode_cell({ r: hr, c: col + 1 });
     if (ws[nextAddr] && /in words$/i.test(String(ws[nextAddr].v ?? ""))) continue;
 
-    const r = insertWordsColumn(ws, col, col + 1, newHeader, opts);
+    const r = insertWordsColumn(ws, col, col + 1, newHeader, opts, hr);
     skipped += r.skipped;
   }
   return { skipped };
