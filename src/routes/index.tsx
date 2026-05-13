@@ -54,6 +54,7 @@ function ExcellonPage() {
   const [workbook, setWorkbook] = useState<XLSX.WorkBook | null>(null);
   const [sheetName, setSheetName] = useState<string>("");
   const [columns, setColumns] = useState<ColumnInfo[]>([]);
+  const [headerRow, setHeaderRow] = useState<number>(0);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [dragOver, setDragOver] = useState(false);
@@ -108,14 +109,14 @@ function ExcellonPage() {
       const first = wb.SheetNames[0];
       setSheetName(first);
       setStatus({ kind: "detecting" });
-      const cols = detectNumericColumns(wb.Sheets[first]);
+      const { headerRow: hr, columns: cols } = detectNumericColumns(wb.Sheets[first]);
+      setHeaderRow(hr);
       setColumns(cols);
-      // pre-select currency-like
       setSelected(new Set(cols.filter((c) => c.isCurrencyLike).map((c) => c.index)));
       if (cols.length === 0) {
         toast.warning("No numeric columns were detected in this sheet.");
       } else {
-        toast.success(`Detected ${cols.length} numeric column${cols.length > 1 ? "s" : ""}.`);
+        toast.success(`Detected header at row ${hr + 1} · ${cols.length} numeric column${cols.length > 1 ? "s" : ""}.`);
       }
       setStatus({ kind: "ready" });
     } catch (e) {
@@ -128,7 +129,8 @@ function ExcellonPage() {
   const onSheetChange = (name: string) => {
     if (!workbook) return;
     setSheetName(name);
-    const cols = detectNumericColumns(workbook.Sheets[name]);
+    const { headerRow: hr, columns: cols } = detectNumericColumns(workbook.Sheets[name]);
+    setHeaderRow(hr);
     setColumns(cols);
     setSelected(new Set(cols.filter((c) => c.isCurrencyLike).map((c) => c.index)));
     if (cols.length === 0) toast.warning("No numeric columns were detected in this sheet.");
@@ -162,7 +164,7 @@ function ExcellonPage() {
       // Per spec: insert new column for each selected column on current sheet.
       const ws = workbook.Sheets[sheetName];
       setStatus({ kind: "processing", progress: 40 });
-      const { skipped } = processSheet(ws, Array.from(selected), opts);
+      const { skipped } = processSheet(ws, Array.from(selected), opts, headerRow);
       setStatus({ kind: "processing", progress: 75 });
 
       const out = XLSX.write(workbook, {
