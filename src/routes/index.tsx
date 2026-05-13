@@ -164,7 +164,7 @@ function ExcellonPage() {
       // Per spec: insert new column for each selected column on current sheet.
       const ws = workbook.Sheets[sheetName];
       setStatus({ kind: "processing", progress: 40 });
-      const { skipped } = processSheet(ws, Array.from(selected), opts);
+      const { skipped } = processSheet(ws, Array.from(selected), opts, headerRow);
       setStatus({ kind: "processing", progress: 75 });
 
       const out = XLSX.write(workbook, {
